@@ -1,6 +1,7 @@
 import sys
 from urllib import parse
 import re
+import os
 
 description='''\
 	           _     _
@@ -23,20 +24,37 @@ if (len(sys.argv)==1):
 	print('       path (default 1) - sitename.tld/path1 and sitename.tld/path2 are euqal'+"\n")
 	exit()
 
+
+if (os.path.isdir(sys.argv[1])):
+	domainslist = [os.path.join(sys.argv[1], f) for f in os.listdir(sys.argv[1]) if os.path.isfile(os.path.join(sys.argv[1], f))]
+	domainslistline = []
+	for i in domainslist:
+		try:
+			domainslistline_f = open(i, 'r')
+		except IOError:
+			print("File "+sys.argv[1]+" not accessible!\n")
+			exit()
+		domainslistline += domainslistline_f.readlines()
+		domainslistline_f.close()
+else:
+	try:
+		domainslistline_f = open(sys.argv[1], 'r') 
+	except IOError:
+		print("File "+sys.argv[1]+" not accessible!\n")
+		exit()
+	domainslistline = domainslistline_f.readlines() 
+	domainslistline_f.close()
+
+print(str(len(domainslistline)) + ' Lines in memory!')
+
 try:
-	domainslist = open(sys.argv[1], 'r') 
+	domainsout = open(sys.argv[2], 'w') 
 except IOError:
-	print("File "+sys.argv[1]+" not accessible!\n")
+	print("File "+sys.argv[2]+" not accessible!\n")
 	exit()
 
 if len(sys.argv)<3:
 	print("Output file must be specify!\n")
-	exit()
-
-try:
-	domainsout = open(sys.argv[2], 'a+') 
-except IOError:
-	print("File "+sys.argv[2]+" not accessible!\n")
 	exit()
 
 d_scheme = 0
@@ -53,8 +71,6 @@ if (len(sys.argv)>4 and (int(sys.argv[4])==1 or int(sys.argv[4])==0)):
 if d_path==1:
 	print(' - Ignore path!')
 
-
-domainslistline = domainslist.readlines() 
 
 domains_unique = []
 for u in domainslistline:
@@ -82,7 +98,6 @@ for u in domainslistline:
 
 for i in domains_unique:
 	domainsout.write(i+"\n")
+print(str(len(domains_unique)) + ' Lines in result list!')
 
 print('> All done!')
-
-domainslist.close()
